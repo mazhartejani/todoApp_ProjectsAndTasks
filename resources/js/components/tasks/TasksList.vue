@@ -23,7 +23,7 @@
                             <i class="fas fa-exclamation text-light" :id="task.id"></i>
                         </span>
                     </a>
-                    <a :href="task.id" v-on:click="handleDelete" data-toggle="tooltip" data-placement="top" title="Delete Task" :id="task.id">
+                    <a href="#myModal" v-on:click="confirmDelete" data-tooltip="tooltip" data-placement="top" title="Delete Task" :id="task.id" data-toggle="modal">
                         <span class="badge badge-danger p-2" :id="task.id">
                             <i class="fa fa-trash-alt text-light" :id="task.id"></i>
                         </span>
@@ -35,6 +35,28 @@
             </tbody>
         </table>
 
+        <!-- Modal HTML -->
+        <div id="myModal" class="modal fade">
+            <div class="modal-dialog modal-confirm">
+                <div class="modal-content">
+                    <div class="modal-header flex-column">
+                        <div class="icon-box">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <h4 class="modal-title w-100">Are you sure?</h4>
+                        <button type="button" class="close" v-on:click="cancelDelete" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Do you really want to delete this task? This process cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary" v-on:click="cancelDelete" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" v-on:click="handleDelete" data-dismiss="modal">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -43,6 +65,11 @@
 export default {
     name: "TasksList",
     props: ['tasks'],
+    data(){
+        return{
+            taskToDelete: null
+        }
+    },
     methods: {
         toggleComplete(e){
             e.preventDefault();
@@ -59,11 +86,15 @@ export default {
                 })
 
         },
-        handleDelete(e){
+        confirmDelete(e){
             e.preventDefault();
-            console.log(e.target)
-            let taskId = e.target.id
-            axios.delete("/api/tasks/"+taskId)
+            this.taskToDelete = e.target.id
+        },
+        cancelDelete(){
+            this.taskToDelete = null;
+        },
+        handleDelete(){
+            axios.delete("/api/tasks/" + this.taskToDelete)
                 .then(response => {
                     console.log("done")
                     //assign tasks array with fresh data
@@ -81,7 +112,7 @@ export default {
             }
         },
         updateTooltip(){
-            $('[data-toggle="tooltip"]').tooltip()
+            $('[data-tooltip="tooltip"]').tooltip()
         }
     },
     mounted() {
